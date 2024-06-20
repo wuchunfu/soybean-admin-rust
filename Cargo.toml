@@ -1,7 +1,8 @@
 [workspace]
-members = [
+members = ["server/api",
     "axum-casbin",
     "sea-orm-adapter",
+    "server/api", "server/config", "server/core", "server/global", "server/initialize", "server/middleware", "server/model", "server/resource", "server/router", "server/service", "server/utils", "server/bin", "server/constant",
 ]
 exclude = []
 resolver = "2"
