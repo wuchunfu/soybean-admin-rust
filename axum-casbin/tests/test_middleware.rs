@@ -4,16 +4,14 @@ use std::{
 };
 
 use axum::{response::Response, routing::get, BoxError, Router};
+use axum_casbin::{CasbinAxumLayer, CasbinVals};
 use axum_test_helpers::TestClient;
 use bytes::Bytes;
-use casbin::function_map::key_match2;
-use casbin::{CoreApi, DefaultModel, FileAdapter};
+use casbin::{function_map::key_match2, CoreApi, DefaultModel, FileAdapter};
 use futures::future::BoxFuture;
 use http::{Request, StatusCode};
 use http_body::Body as HttpBody;
 use tower::{Layer, Service};
-
-use axum_casbin::{CasbinAxumLayer, CasbinVals};
 
 #[derive(Clone)]
 struct FakeAuthLayer;
@@ -43,10 +41,10 @@ where
     ResBody: HttpBody<Data = Bytes> + Send + 'static,
     ResBody::Error: Into<BoxError>,
 {
-    type Response = S::Response;
     type Error = S::Error;
     // `BoxFuture` is a type alias for `Pin<Box<dyn Future + Send + 'a>>`
     type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+    type Response = S::Response;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.inner.poll_ready(cx)

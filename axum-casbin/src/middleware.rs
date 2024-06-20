@@ -9,8 +9,10 @@ use std::{
 use async_std::sync::RwLock;
 use axum::{body, response::Response, BoxError};
 use bytes::Bytes;
-use casbin::prelude::{TryIntoAdapter, TryIntoModel};
-use casbin::{CachedEnforcer, CoreApi, Result as CasbinResult};
+use casbin::{
+    prelude::{TryIntoAdapter, TryIntoModel},
+    CachedEnforcer, CoreApi, Result as CasbinResult,
+};
 use futures::future::BoxFuture;
 use http::{Request, StatusCode};
 use http_body::Body as HttpBody;
@@ -90,10 +92,10 @@ where
     ResBody: HttpBody<Data = Bytes> + Send + 'static,
     ResBody::Error: Into<BoxError>,
 {
-    type Response = Response;
     type Error = Infallible;
     // `BoxFuture` is a type alias for `Pin<Box<dyn Future + Send + 'a>>`
     type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+    type Response = Response;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.inner.poll_ready(cx)
