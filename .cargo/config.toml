@@ -1,0 +1,27 @@
+[target.x86_64-pc-windows-msvc]
+rustflags = [
+    "-C", "opt-level=3", # 高级别优化
+    "-C", "target-cpu=native", # 针对本地 CPU 优化
+    "-C", "codegen-units=1", # 降低代码生成单元数量以提高优化质量
+    "-C", "link-args=/LTCG", # 启用链接时代码生成
+    "-C", "link-args=/OPT:REF", # 优化参考
+    "-C", "link-args=/OPT:ICF", # 优化重复代码折叠
+    "-C", "target-feature=+crt-static", # 静态链接 C 运行时
+    "-C", "link-args=/DEBUG:NONE" # 不生成调试信息
+]
+
+[target.x86_64-unknown-linux-gnu]
+linker = "clang" # 使用 Clang 作为链接器
+rustflags = [
+    "-C", "opt-level=3", # 高级别优化
+    "-C", "target-cpu=native", # 针对本地 CPU 优化
+    "-C", "codegen-units=1", # 降低代码生成单元数量以提高优化质量
+    "-C", "link-arg=-fuse-ld=lld", # 使用 LLVM 的 lld 链接器
+    "-C", "link-arg=-Wl,-O1", # 链接器优化
+    "-C", "link-arg=-Wl,--gc-sections", # 移除未使用的节
+]
+
+# Tokio 相关配置（根据需要）
+[target.'cfg(tokio_unstable)']
+rustflags = ["--cfg", "tokio_unstable"] # 启用 Tokio 不稳定特性
+
