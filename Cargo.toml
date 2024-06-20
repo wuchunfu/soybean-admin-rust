@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "axum-casbin",
     "sea-orm-adapter",
 ]
 exclude = []
@@ -12,6 +13,9 @@ lto = true                  # 启用链接时优化（Link Time Optimization）�
 codegen-units = 1           # 将代码生成单元设置为1，以允许编译器在编译时进行更广泛的优化，但会增加编译时间。
 panic = 'abort'             # 在遇到 panic 时使程序立即终止，而不是展开栈。这可以减小二进制大小，也能略微提高性能。
 
+[profile.dev]
+split-debuginfo = "unpacked"
+
 [workspace.package]
 authors = ["1571339199@qq.com"]
 publish = false
@@ -23,3 +27,13 @@ async-trait = { version = "0.1.80", default-features = false }
 casbin = { version = "2.2.0", default-features = false }
 sea-orm = { version = "0.12.15", default-features = false }
 tokio = { version = "1.38.0", default-features = false }
+
+async-std = { version = "1.12.0", default-features = false }
+axum = "0.7.5"
+futures = "0.3.30"
+tower = "0.4.13"
+http = "1.1.0"
+http-body = "1.0.0"
+http-body-util = "0.1.2"
+bytes = "1.6.0"
+axum-test-helpers = "0.7.5"
