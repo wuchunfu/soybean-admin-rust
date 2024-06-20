@@ -6,3 +6,22 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+server-config = { path = "../config" }
+axum-casbin = { path = "../../axum-casbin" }
+sea-orm-adapter = { path = "../../sea-orm-adapter" }
+
+log = { workspace = true }
+casbin = { workspace = true }
+sea-orm = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, default-features = false, features = ["full"] }
+simplelog = { workspace = true }
+axum = { workspace = true }
+futures = { workspace = true }
+tower = { workspace = true, features = ["full"] }
+http = { workspace = true }
+http-body = { workspace = true }
+http-body-util = { workspace = true }
+bytes = { workspace = true }
+axum-test-helpers = { workspace = true }
