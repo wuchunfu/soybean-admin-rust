@@ -6,3 +6,12 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+once_cell = { workspace = true }
+tokio = { workspace = true, default-features = false, features = ["full"] }
+log = { workspace = true }
+
+[dev-dependencies]
+simplelog = { workspace = true }
