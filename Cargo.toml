@@ -24,22 +24,34 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace.dependencies]
-async-trait = { version = "0.1.80", default-features = false }
-casbin = { version = "2.2.0", default-features = false }
-sea-orm = { version = "0.12.15", default-features = false }
+# Asynchronous Runtime and Utilities
 tokio = { version = "1.38.0", default-features = false }
-
+async-trait = { version = "0.1.80", default-features = false }
 async-std = { version = "1.12.0", default-features = false }
-axum = "0.7.5"
 futures = "0.3.30"
+
+# Web Framework and Middleware
+axum = "0.7.5"
 tower = "0.4.13"
 http = "1.1.0"
 http-body = "1.0.0"
 http-body-util = "0.1.2"
 bytes = "1.6.0"
+
+# Casbin and Authorization
+casbin = { version = "2.2.0", default-features = false }
+
+# Database ORM and Adapter
+sea-orm = { version = "0.12.15", default-features = false }
+
+# Testing
 axum-test-helpers = "0.7.5"
+
+# Serialization and Deserialization
 serde = "1.0.203"
 serde_yaml = "0.9.33"
+
+# Utility Libraries
 once_cell = "1.19.0"
 log = "0.4.21"
 simplelog = "0.12.2"
