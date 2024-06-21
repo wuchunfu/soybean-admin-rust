@@ -76,9 +76,9 @@ mod tests {
             now.timestamp() as usize,
             now.timestamp() as usize,
             "unique_token_id".to_string(),
+            "account".to_string(),
             "admin".to_string(),
             "example_domain".to_string(),
-            "example_organization".to_string(),
         )
     }
 

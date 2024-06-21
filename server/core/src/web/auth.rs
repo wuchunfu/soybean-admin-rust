@@ -16,9 +16,9 @@ pub struct Claims {
     iat: usize,
     nbf: usize,
     jti: String,
+    account: String,
     role: String,
     domain: String,
-    org: String,
 }
 
 impl Claims {
@@ -30,9 +30,9 @@ impl Claims {
         iat: usize,
         nbf: usize,
         jti: String,
+        account: String,
         role: String,
         domain: String,
-        org: String,
     ) -> Self {
         Self {
             sub,
@@ -42,9 +42,9 @@ impl Claims {
             iat,
             nbf,
             jti,
+            account,
             role,
             domain,
-            org,
         }
     }
 }
@@ -52,7 +52,7 @@ impl Claims {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
     user_id: String,
-    account_name: String,
+    account: String,
     role: String,
     organization: String,
 }
@@ -61,9 +61,9 @@ impl From<Claims> for User {
     fn from(claims: Claims) -> Self {
         User {
             user_id: claims.sub,
-            account_name: claims.aud,
+            account: claims.account,
             role: claims.role,
-            organization: claims.org,
+            organization: claims.domain,
         }
     }
 }
