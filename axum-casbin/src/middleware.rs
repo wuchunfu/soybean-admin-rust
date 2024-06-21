@@ -7,7 +7,11 @@ use std::{
 
 #[cfg(feature = "runtime-async-std")]
 use async_std::sync::RwLock;
-use axum::{body, response::Response, BoxError};
+use axum::{
+    body,
+    response::{IntoResponse, Response},
+    BoxError,
+};
 use bytes::Bytes;
 use casbin::{
     prelude::{TryIntoAdapter, TryIntoModel},
@@ -16,7 +20,7 @@ use casbin::{
 use futures::future::BoxFuture;
 use http::{Request, StatusCode};
 use http_body::Body as HttpBody;
-use http_body_util::Full;
+use server_core::web::res::Res;
 #[cfg(feature = "runtime-tokio")]
 use tokio::sync::RwLock;
 use tower::{Layer, Service};
@@ -113,10 +117,10 @@ where
             let vals = match option_vals {
                 Some(value) => value,
                 None => {
-                    return Ok(Response::builder()
-                        .status(StatusCode::UNAUTHORIZED)
-                        .body(body::Body::new(Full::from("401 Unauthorized")))
-                        .unwrap());
+                    return Ok(Res::<String>::new_error(
+                        StatusCode::UNAUTHORIZED.as_u16(),
+                        "No authentication token was provided. Please ensure your request includes a valid token.",
+                    ).into_response());
                 }
             };
 
@@ -132,17 +136,17 @@ where
                         }
                         Ok(false) => {
                             drop(lock);
-                            Ok(Response::builder()
-                                .status(StatusCode::FORBIDDEN)
-                                .body(body::Body::new(Full::from("403 Forbidden")))
-                                .unwrap())
+                            Ok(Res::<String>::new_error(
+                                StatusCode::FORBIDDEN.as_u16(),
+                                "You do not have the necessary permissions to access this resource. Please contact support if you believe this is an error.",
+                            ).into_response())
                         }
                         Err(_) => {
                             drop(lock);
-                            Ok(Response::builder()
-                                .status(StatusCode::BAD_GATEWAY)
-                                .body(body::Body::new(Full::from("502 Bad Gateway")))
-                                .unwrap())
+                            Ok(Res::<String>::new_error(
+                                StatusCode::BAD_GATEWAY.as_u16(),
+                                "We encountered an unexpected error while processing your request. Our team has been notified, and we are investigating the issue.",
+                            ).into_response())
                         }
                     }
                 } else {
@@ -154,25 +158,26 @@ where
                         }
                         Ok(false) => {
                             drop(lock);
-                            Ok(Response::builder()
-                                .status(StatusCode::FORBIDDEN)
-                                .body(body::Body::new(Full::from("403 Forbidden")))
-                                .unwrap())
+                            Ok(Res::<String>::new_error(
+                                StatusCode::FORBIDDEN.as_u16(),
+                                "You do not have the necessary permissions to access this resource. Please contact support if you believe this is an error.",
+                            ).into_response())
                         }
                         Err(_) => {
                             drop(lock);
-                            Ok(Response::builder()
-                                .status(StatusCode::BAD_GATEWAY)
-                                .body(body::Body::new(Full::from("502 Bad Gateway")))
-                                .unwrap())
+                            Ok(Res::<String>::new_error(
+                                StatusCode::BAD_GATEWAY.as_u16(),
+                                "We encountered an unexpected error while processing your request. Our team has been notified, and we are investigating the issue.",
+                            ).into_response())
                         }
                     }
                 }
             } else {
-                Ok(Response::builder()
-                    .status(StatusCode::UNAUTHORIZED)
-                    .body(body::Body::new(Full::from("401 Unauthorized")))
-                    .unwrap())
+                Ok(Res::<String>::new_error(
+                    StatusCode::UNAUTHORIZED.as_u16(),
+                    "No token provided or invalid token type",
+                )
+                .into_response())
             }
         })
     }
