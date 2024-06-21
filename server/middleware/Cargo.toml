@@ -6,3 +6,16 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+server-core = { path = "../core" }
+
+jsonwebtoken = { workspace = true }
+headers = { workspace = true }
+axum = { workspace = true }
+axum-extra = { workspace = true, features = ["typed-header"] }
+
+[dev-dependencies]
+server-initialize = { path = "../initialize" }
+
+tokio = { workspace = true, default-features = false, features = ["full"] }
+tower = { workspace = true, features = ["full"] }
+chrono = { workspace = true }

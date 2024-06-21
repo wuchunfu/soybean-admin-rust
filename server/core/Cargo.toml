@@ -6,6 +6,16 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+server-config = { path = "../config" }
+
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 axum = { workspace = true }
+jsonwebtoken = { workspace = true }
+once_cell = { workspace = true }
+tokio = { workspace = true, default-features = false, features = ["full"] }
+
+[dev-dependencies]
+server-initialize = { path = "../initialize" }
+
+chrono = { workspace = true }

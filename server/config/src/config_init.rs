@@ -26,6 +26,7 @@ pub async fn init_from_file(file_path: &str) -> Result<(), ConfigError> {
     init_config(config.clone());
     init_config(config.database);
     init_config(config.server);
+    init_config(config.jwt);
 
     info!("[soybean-admin-rust] >>>>>> [server-config] Configuration initialized successfully");
     Ok(())

@@ -68,6 +68,6 @@ where
             }
         };
 
-        Response::builder().status(StatusCode::OK).body(json_body.into()).unwrap()
+        Response::builder().status(self.code).body(json_body.into()).unwrap()
     }
 }
