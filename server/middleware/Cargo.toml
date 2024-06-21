@@ -7,6 +7,8 @@ edition.workspace = true
 
 [dependencies]
 server-core = { path = "../core" }
+server-constant = { path = "../constant" }
+axum-casbin = { path = "../../axum-casbin" }
 
 jsonwebtoken = { workspace = true }
 headers = { workspace = true }

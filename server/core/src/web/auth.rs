@@ -57,6 +57,16 @@ pub struct User {
     organization: String,
 }
 
+impl User {
+    pub fn account(&self) -> &str {
+        &self.account
+    }
+
+    pub fn organization(&self) -> &str {
+        &self.organization
+    }
+}
+
 impl From<Claims> for User {
     fn from(claims: Claims) -> Self {
         User {
