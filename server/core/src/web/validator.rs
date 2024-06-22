@@ -1,56 +1,72 @@
 use axum::{
     async_trait,
-    extract::{rejection::FormRejection, FromRequest, Request},
-    http::StatusCode,
+    extract::{Form, FromRequest, Json, Request},
+    http::{header::CONTENT_TYPE, StatusCode},
     response::{IntoResponse, Response},
-    Form, Json,
 };
 use serde::de::DeserializeOwned;
 use thiserror::Error;
-use validator::Validate;
+use validator::{Validate, ValidationErrors};
 
 use crate::web::res::Res;
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Error)]
+pub enum ValidationError {
+    #[error("Invalid JSON data")]
+    JsonError,
+
+    #[error("Invalid form data")]
+    FormError,
+
+    #[error("Validation error: {0}")]
+    Validation(#[from] ValidationErrors),
+
+    #[error("Data is missing")]
+    DataMissing,
+}
+
+#[derive(Debug, Clone)]
 pub struct ValidatedForm<T>(pub T);
 
 #[async_trait]
-impl<T, S> FromRequest<S> for ValidatedForm<T>
+impl<B, T> FromRequest<B> for ValidatedForm<T>
 where
-    T: DeserializeOwned + Validate,
-    S: Send + Sync,
-    Form<T>: FromRequest<S, Rejection = FormRejection>,
+    T: DeserializeOwned + Validate + Send + Sync,
+    B: Send + Sync,
 {
-    type Rejection = ServerError;
+    type Rejection = ValidationError;
 
-    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
-        let Form(value) = Form::<T>::from_request(req, state).await?;
-        value.validate()?;
-        Ok(ValidatedForm(value))
+    async fn from_request(req: Request, state: &B) -> Result<Self, Self::Rejection> {
+        let content_type = req.headers().get(CONTENT_TYPE).and_then(|value| value.to_str().ok());
+
+        match content_type.as_deref() {
+            Some(ct) if ct.contains(mime::APPLICATION_JSON.as_ref()) => {
+                let result = Json::<T>::from_request(req, state).await;
+                if let Ok(json) = result {
+                    json.0.validate().map_err(ValidationError::from)?;
+                    Ok(ValidatedForm(json.0))
+                } else {
+                    Err(ValidationError::JsonError)
+                }
+            }
+            Some(ct) if ct.contains(mime::APPLICATION_WWW_FORM_URLENCODED.as_ref()) => {
+                let result = Form::<T>::from_request(req, state).await;
+                match result {
+                    Ok(form) => {
+                        form.0.validate().map_err(ValidationError::from)?;
+                        Ok(ValidatedForm(form.0))
+                    }
+                    Err(_) => Err(ValidationError::FormError),
+                }
+            }
+            _ => Err(ValidationError::DataMissing),
+        }
     }
 }
 
-#[derive(Debug, Error)]
-pub enum ServerError {
-    #[error(transparent)]
-    ValidationError(#[from] validator::ValidationErrors),
-
-    #[error(transparent)]
-    AxumFormRejection(#[from] FormRejection),
-}
-
-impl IntoResponse for ServerError {
+impl IntoResponse for ValidationError {
     fn into_response(self) -> Response {
-        match self {
-            ServerError::ValidationError(_) => {
-                let message = format!("Input validation error: [{self}]").replace('\n', ", ");
-                Json(Res::<String>::new_error(StatusCode::BAD_REQUEST.as_u16(), message.as_str()))
-            }
-            ServerError::AxumFormRejection(_) => Json(Res::<String>::new_error(
-                StatusCode::BAD_REQUEST.as_u16(),
-                self.to_string().as_str(),
-            )),
-        }
-        .into_response()
+        Res::<String>::new_error(StatusCode::BAD_REQUEST.as_u16(), format!("{}", self).as_ref())
+            .into_response()
     }
 }
