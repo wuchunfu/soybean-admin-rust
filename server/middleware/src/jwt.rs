@@ -43,7 +43,6 @@ mod tests {
     use axum::{
         body::Body,
         http::{Request, StatusCode},
-        response::IntoResponse,
         routing::get,
         Router,
     };
@@ -60,8 +59,8 @@ mod tests {
 
     use crate::jwt::{jwt_auth_middleware, User};
 
-    async fn user_info_handler(user: User) -> impl IntoResponse {
-        Res::new_data(user).into_response()
+    async fn user_info_handler(user: User) -> Res<User> {
+        Res::new_data(user)
     }
 
     #[tokio::test]
@@ -95,6 +94,7 @@ mod tests {
         let response = service.oneshot(request).await.unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
+        println!("headers is {:?}", response.headers());
         let body_bytes = axum::body::to_bytes(response.into_body(), 1000).await.unwrap();
         let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
         println!("body_str is {}", body_str);

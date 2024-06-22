@@ -7,17 +7,16 @@ edition.workspace = true
 
 [dependencies]
 server-core = { path = "../core" }
-server-constant = { path = "../constant" }
 axum-casbin = { path = "../../axum-casbin" }
 
-jsonwebtoken = { workspace = true }
-headers = { workspace = true }
 axum = { workspace = true }
-axum-extra = { workspace = true, features = ["typed-header"] }
+headers = { workspace = true }
 
 [dev-dependencies]
+server-constant = { path = "../constant" }
 server-initialize = { path = "../initialize" }
 
-tokio = { workspace = true, default-features = false, features = ["full"] }
-tower = { workspace = true, features = ["full"] }
 chrono = { workspace = true }
+jsonwebtoken = { workspace = true }
+tower = { workspace = true, features = ["full"] }
+tokio = { workspace = true, default-features = false, features = ["full"] }

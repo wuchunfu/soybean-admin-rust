@@ -3,6 +3,7 @@ use std::{fmt::Debug, string::ToString};
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
+    Json,
 };
 use serde::Serialize;
 
@@ -58,16 +59,6 @@ where
     T: Serialize + Send + Sync + Debug + 'static,
 {
     fn into_response(self) -> Response {
-        let json_body = match serde_json::to_string(&self) {
-            Ok(body) => body,
-            Err(_) => {
-                return Response::builder()
-                    .status(StatusCode::INTERNAL_SERVER_ERROR)
-                    .body("Internal Server Error".into())
-                    .unwrap();
-            }
-        };
-
-        Response::builder().status(self.code).body(json_body.into()).unwrap()
+        Json(self).into_response()
     }
 }

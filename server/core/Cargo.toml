@@ -9,11 +9,12 @@ edition.workspace = true
 server-config = { path = "../config" }
 
 serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
 axum = { workspace = true }
+validator = { workspace = true, features = ["derive"] }
 jsonwebtoken = { workspace = true }
 once_cell = { workspace = true }
 tokio = { workspace = true, default-features = false, features = ["full"] }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 server-initialize = { path = "../initialize" }

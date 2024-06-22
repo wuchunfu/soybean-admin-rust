@@ -15,13 +15,13 @@ casbin = { workspace = true }
 sea-orm = { workspace = true }
 
 [dev-dependencies]
-tokio = { workspace = true, default-features = false, features = ["full"] }
-simplelog = { workspace = true }
 axum = { workspace = true }
-futures = { workspace = true }
+axum-test-helpers = { workspace = true }
 tower = { workspace = true, features = ["full"] }
+tokio = { workspace = true, default-features = false, features = ["full"] }
+futures = { workspace = true }
 http = { workspace = true }
 http-body = { workspace = true }
 http-body-util = { workspace = true }
 bytes = { workspace = true }
-axum-test-helpers = { workspace = true }
+simplelog = { workspace = true }
