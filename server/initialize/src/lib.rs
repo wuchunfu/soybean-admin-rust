@@ -1,8 +1,10 @@
 pub use casbin_initialization::initialize_casbin;
 pub use config_initialization::initialize_config;
+pub use router_initialization::initialize_admin_router;
 
-pub mod casbin_initialization;
-pub mod config_initialization;
+mod casbin_initialization;
+mod config_initialization;
+mod router_initialization;
 
 #[cfg(test)]
 mod tests {

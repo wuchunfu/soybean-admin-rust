@@ -746,6 +746,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "derive-new"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d150dea618e920167e5973d70ae6ece4385b7164e0d799fe7c122dd0a5d912ad"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2560,12 +2571,17 @@ dependencies = [
  "axum",
  "server-core",
  "server-model",
- "tokio",
+ "server-service",
 ]
 
 [[package]]
 name = "server-bin"
 version = "0.1.0"
+dependencies = [
+ "axum",
+ "server-initialize",
+ "tokio",
+]
 
 [[package]]
 name = "server-config"
@@ -2591,6 +2607,7 @@ dependencies = [
  "axum",
  "chrono",
  "jsonwebtoken",
+ "mime",
  "once_cell",
  "serde",
  "server-config",
@@ -2621,6 +2638,8 @@ dependencies = [
  "sea-orm",
  "sea-orm-adapter",
  "server-config",
+ "server-router",
+ "server-service",
  "simplelog",
  "tokio",
  "tower",
@@ -2646,6 +2665,7 @@ dependencies = [
 name = "server-model"
 version = "0.1.0"
 dependencies = [
+ "derive-new",
  "serde",
  "validator",
 ]
@@ -2657,10 +2677,18 @@ version = "0.1.0"
 [[package]]
 name = "server-router"
 version = "0.1.0"
+dependencies = [
+ "axum",
+ "server-api",
+]
 
 [[package]]
 name = "server-service"
 version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "server-model",
+]
 
 [[package]]
 name = "server-utils"

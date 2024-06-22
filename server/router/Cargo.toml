@@ -6,3 +6,6 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+server-api = { path = "../api" }
+
+axum = { workspace = true }

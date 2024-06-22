@@ -8,3 +8,4 @@ edition.workspace = true
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
 validator = { workspace = true, features = ["derive"] }
+derive-new = { workspace = true }

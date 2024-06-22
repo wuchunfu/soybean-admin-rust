@@ -7,15 +7,17 @@ edition.workspace = true
 
 [dependencies]
 server-config = { path = "../config" }
+server-router = { path = "../router" }
+server-service = { path = "../service" }
 axum-casbin = { path = "../../axum-casbin" }
 sea-orm-adapter = { path = "../../sea-orm-adapter" }
 
 log = { workspace = true }
 casbin = { workspace = true }
 sea-orm = { workspace = true }
+axum = { workspace = true }
 
 [dev-dependencies]
-axum = { workspace = true }
 axum-test-helpers = { workspace = true }
 tower = { workspace = true, features = ["full"] }
 tokio = { workspace = true, default-features = false, features = ["full"] }

@@ -8,6 +8,6 @@ edition.workspace = true
 [dependencies]
 server-core = { path = "../core" }
 server-model = { path = "../model" }
+server-service = { path = "../service" }
 
 axum = { workspace = true }
-tokio = { workspace = true, default-features = false, features = ["full"] }

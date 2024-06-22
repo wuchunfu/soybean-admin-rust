@@ -6,3 +6,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+server-initialize = { path = "../initialize" }
+
+axum = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
