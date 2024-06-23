@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, TokenData, Validation};
-use once_cell::sync::Lazy;
 use server_config::JwtConfig;
 use server_global::global;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, OnceCell};
 
 use crate::web::auth::Claims;
 
@@ -22,26 +21,50 @@ impl Keys {
     }
 }
 
-pub static KEYS: Lazy<Arc<Mutex<Keys>>> = Lazy::new(|| {
-    let config = global::get_config::<JwtConfig>()
-        .expect("[soybean-admin-rust] >>>>>> [server-core] Failed to load JWT config");
-    Arc::new(Mutex::new(Keys::new(config.jwt_secret.as_bytes())))
-});
+pub static KEYS: OnceCell<Arc<Mutex<Keys>>> = OnceCell::const_new();
+pub static VALIDATION: OnceCell<Arc<Mutex<Validation>>> = OnceCell::const_new();
 
-pub static VALIDATION: Lazy<Arc<Mutex<Validation>>> = Lazy::new(|| {
-    let config = global::get_config::<JwtConfig>()
-        .expect("[soybean-admin-rust] >>>>>> [server-core] Failed to load JWT config");
-    let mut validation = Validation::default();
+pub async fn initialize_keys_and_validation() {
+    let jwt_config = match global::get_config::<JwtConfig>().await {
+        Some(cfg) => cfg,
+        None => {
+            eprintln!("Failed to load JWT config");
+            return;
+        }
+    };
+
+    let keys = Keys::new(jwt_config.jwt_secret.as_bytes());
+    KEYS.set(Arc::new(Mutex::new(keys)))
+        .unwrap_or_else(|_| eprintln!("Failed to set KEYS"));
+
+    let mut validation = jsonwebtoken::Validation::default();
     validation.leeway = 60;
-    validation.set_issuer(&[config.issuer.clone()]);
-    Arc::new(Mutex::new(validation))
-});
+    validation.set_issuer(&[&jwt_config.issuer]);
+    VALIDATION
+        .set(Arc::new(Mutex::new(validation)))
+        .unwrap_or_else(|_| eprintln!("Failed to set VALIDATION"));
+}
+
+// pub static KEYS: Lazy<Arc<Mutex<Keys>>> = Lazy::new(|| {
+//     let config = global::get_config::<JwtConfig>()
+//         .expect("[soybean-admin-rust] >>>>>> [server-core] Failed to load JWT
+// config");     Arc::new(Mutex::new(Keys::new(config.jwt_secret.as_bytes())))
+// });
+//
+// pub static VALIDATION: Lazy<Arc<Mutex<Validation>>> = Lazy::new(|| {
+//     let config = global::get_config::<JwtConfig>()
+//         .expect("[soybean-admin-rust] >>>>>> [server-core] Failed to load JWT
+// config");     let mut validation = Validation::default();
+//     validation.leeway = 60;
+//     validation.set_issuer(&[config.issuer.clone()]);
+//     Arc::new(Mutex::new(validation))
+// });
 
 pub struct JwtUtils;
 
 impl JwtUtils {
     pub async fn generate_token(claims: &Claims) -> Result<String, jsonwebtoken::errors::Error> {
-        let keys = KEYS.lock().await;
+        let keys = KEYS.get().expect("Keys not initialized").lock().await;
         encode(&Header::default(), claims, &keys.encoding)
     }
 
@@ -49,10 +72,10 @@ impl JwtUtils {
         token: &str,
         audience: &str,
     ) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
-        let keys = KEYS.lock().await;
-        let val = VALIDATION.lock().await;
+        let keys = KEYS.get().expect("Keys not initialized").lock().await;
+        let validation = VALIDATION.get().expect("Validation not initialized").lock().await;
 
-        let mut validation_clone = val.clone();
+        let mut validation_clone = validation.clone();
         validation_clone.set_audience(&[audience.to_string()]);
         decode::<Claims>(token, &keys.decoding, &validation_clone)
     }
@@ -81,9 +104,20 @@ mod tests {
         )
     }
 
+    static INITIALIZED: Mutex<Option<Arc<()>>> = Mutex::const_new(None);
+
+    async fn init() {
+        let mut initialized = INITIALIZED.lock().await;
+        if initialized.is_none() {
+            initialize_config("../resources/application.yaml").await;
+            initialize_keys_and_validation().await;
+            *initialized = Some(Arc::new(()));
+        }
+    }
+
     #[tokio::test]
     async fn test_validate_token_success() {
-        initialize_config("../resources/application.yaml").await;
+        init().await;
 
         let claims =
             create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience", 3600);
@@ -95,7 +129,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_validate_token_invalid_audience() {
-        initialize_config("../resources/application.yaml").await;
+        init().await;
 
         let claims = create_claims(
             "https://github.com/ByteByteBrew/soybean-admin-rust",
@@ -110,7 +144,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_validate_token_invalid_issuer() {
-        initialize_config("../resources/application.yaml").await;
+        init().await;
 
         let claims = create_claims("invalid_issuer", "audience", 3600);
         let token = JwtUtils::generate_token(&claims).await.unwrap();
@@ -121,7 +155,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_validate_token_expired() {
-        initialize_config("../resources/application.yaml").await;
+        init().await;
 
         let claims =
             create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience", -3600);
@@ -133,7 +167,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_validate_token_invalid_signature() {
-        initialize_config("../resources/application.yaml").await;
+        init().await;
 
         let claims =
             create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience", 3600);

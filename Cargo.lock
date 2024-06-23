@@ -2623,6 +2623,8 @@ name = "server-global"
 version = "0.1.0"
 dependencies = [
  "once_cell",
+ "sea-orm",
+ "tokio",
 ]
 
 [[package]]

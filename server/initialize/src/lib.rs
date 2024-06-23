@@ -42,7 +42,7 @@ mod tests {
 
         initialize_config("../resources/application.yaml").await;
 
-        let db_config = global::get_config::<DatabaseConfig>().unwrap();
+        let db_config = global::get_config::<DatabaseConfig>().await.unwrap();
         assert_eq!(db_config.url, "postgres://user:password@localhost/db");
     }
 

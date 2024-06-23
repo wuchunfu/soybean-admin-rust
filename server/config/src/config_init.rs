@@ -24,10 +24,10 @@ pub async fn init_from_file(file_path: &str) -> Result<(), ConfigError> {
         ConfigError::ParseError(e)
     })?;
 
-    global::init_config::<Config>(config.clone());
-    global::init_config::<DatabaseConfig>(config.database);
-    global::init_config::<ServerConfig>(config.server);
-    global::init_config::<JwtConfig>(config.jwt);
+    global::init_config::<Config>(config.clone()).await;
+    global::init_config::<DatabaseConfig>(config.database).await;
+    global::init_config::<ServerConfig>(config.server).await;
+    global::init_config::<JwtConfig>(config.jwt).await;
 
     info!("[soybean-admin-rust] >>>>>> [server-config] Configuration initialized successfully");
     Ok(())
@@ -56,7 +56,7 @@ mod tests {
         let result = init_from_file("examples/application.yaml").await;
         assert!(result.is_ok());
 
-        let db_config = global::get_config::<DatabaseConfig>().unwrap();
+        let db_config = global::get_config::<DatabaseConfig>().await.unwrap();
         info!("db_config is {:?}", db_config);
         assert_eq!(db_config.url, "postgres://user:password@localhost/db");
     }
