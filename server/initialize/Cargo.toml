@@ -18,6 +18,8 @@ sea-orm = { workspace = true }
 axum = { workspace = true }
 
 [dev-dependencies]
+server-global = { path = "../global" }
+
 axum-test-helpers = { workspace = true }
 tower = { workspace = true, features = ["full"] }
 tokio = { workspace = true, default-features = false, features = ["full"] }

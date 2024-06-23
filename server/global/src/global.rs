@@ -6,16 +6,16 @@ use std::{
 
 use once_cell::sync::Lazy;
 
-static CONFIG_CONTEXT: Lazy<RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>> =
+static GLOBAL_CONFIG: Lazy<RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
 
 pub fn init_config<T: 'static + Any + Send + Sync>(config: T) {
-    let mut context = CONFIG_CONTEXT.write().unwrap();
+    let mut context = GLOBAL_CONFIG.write().unwrap();
     context.insert(TypeId::of::<T>(), Arc::new(config));
 }
 
 pub fn get_config<T: 'static + Any + Send + Sync>() -> Option<Arc<T>> {
-    let context = CONFIG_CONTEXT.read().unwrap();
+    let context = GLOBAL_CONFIG.read().unwrap();
     context
         .get(&TypeId::of::<T>())
         .and_then(|config| config.clone().downcast::<T>().ok())

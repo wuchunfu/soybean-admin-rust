@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
-use jsonwebtoken::{
-    decode, encode, Algorithm, DecodingKey, EncodingKey, Header, TokenData, Validation,
-};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, TokenData, Validation};
 use once_cell::sync::Lazy;
-use server_config::{get_config, JwtConfig};
+use server_config::JwtConfig;
+use server_global::global;
 use tokio::sync::Mutex;
 
 use crate::web::auth::Claims;
@@ -24,15 +23,15 @@ impl Keys {
 }
 
 pub static KEYS: Lazy<Arc<Mutex<Keys>>> = Lazy::new(|| {
-    let config = get_config::<JwtConfig>()
+    let config = global::get_config::<JwtConfig>()
         .expect("[soybean-admin-rust] >>>>>> [server-core] Failed to load JWT config");
     Arc::new(Mutex::new(Keys::new(config.jwt_secret.as_bytes())))
 });
 
 pub static VALIDATION: Lazy<Arc<Mutex<Validation>>> = Lazy::new(|| {
-    let config = get_config::<JwtConfig>()
+    let config = global::get_config::<JwtConfig>()
         .expect("[soybean-admin-rust] >>>>>> [server-core] Failed to load JWT config");
-    let mut validation = Validation::new(Algorithm::HS256);
+    let mut validation = Validation::default();
     validation.leeway = 60;
     validation.set_issuer(&[config.issuer.clone()]);
     Arc::new(Mutex::new(validation))

@@ -21,7 +21,8 @@ mod tests {
     use futures::future::BoxFuture;
     use http::{Request, StatusCode};
     use log::LevelFilter;
-    use server_config::{get_config, DatabaseConfig};
+    use server_config::DatabaseConfig;
+    use server_global::global;
     use simplelog::{Config as LogConfig, SimpleLogger};
     use tower::Service;
 
@@ -41,7 +42,7 @@ mod tests {
 
         initialize_config("../resources/application.yaml").await;
 
-        let db_config = get_config::<DatabaseConfig>().unwrap();
+        let db_config = global::get_config::<DatabaseConfig>().unwrap();
         assert_eq!(db_config.url, "postgres://user:password@localhost/db");
     }
 

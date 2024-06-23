@@ -1,8 +1,9 @@
 use log::{error, info};
+use server_global::global;
 use thiserror::Error;
 use tokio::fs;
 
-use crate::{context::init_config, model::Config};
+use crate::{model::Config, DatabaseConfig, JwtConfig, ServerConfig};
 
 #[derive(Debug, Error)]
 pub enum ConfigError {
@@ -23,10 +24,10 @@ pub async fn init_from_file(file_path: &str) -> Result<(), ConfigError> {
         ConfigError::ParseError(e)
     })?;
 
-    init_config(config.clone());
-    init_config(config.database);
-    init_config(config.server);
-    init_config(config.jwt);
+    global::init_config::<Config>(config.clone());
+    global::init_config::<DatabaseConfig>(config.database);
+    global::init_config::<ServerConfig>(config.server);
+    global::init_config::<JwtConfig>(config.jwt);
 
     info!("[soybean-admin-rust] >>>>>> [server-config] Configuration initialized successfully");
     Ok(())
@@ -38,7 +39,7 @@ mod tests {
     use simplelog::{Config as LogConfig, SimpleLogger};
 
     use super::*;
-    use crate::{context::get_config, model::DatabaseConfig};
+    use crate::model::DatabaseConfig;
 
     static INIT: std::sync::Once = std::sync::Once::new();
 
@@ -55,7 +56,7 @@ mod tests {
         let result = init_from_file("examples/application.yaml").await;
         assert!(result.is_ok());
 
-        let db_config = get_config::<DatabaseConfig>().unwrap();
+        let db_config = global::get_config::<DatabaseConfig>().unwrap();
         info!("db_config is {:?}", db_config);
         assert_eq!(db_config.url, "postgres://user:password@localhost/db");
     }
