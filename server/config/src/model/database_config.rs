@@ -8,3 +8,9 @@ pub struct DatabaseConfig {
     pub connect_timeout: u64,
     pub idle_timeout: u64,
 }
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct DatabasesConfig {
+    pub name: String,
+    pub database: DatabaseConfig,
+}

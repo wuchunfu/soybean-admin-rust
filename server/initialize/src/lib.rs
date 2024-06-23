@@ -4,6 +4,7 @@ pub use router_initialization::initialize_admin_router;
 
 mod casbin_initialization;
 mod config_initialization;
+mod db_initialization;
 mod router_initialization;
 
 #[cfg(test)]

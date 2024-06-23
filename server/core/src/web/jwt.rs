@@ -28,21 +28,22 @@ pub async fn initialize_keys_and_validation() {
     let jwt_config = match global::get_config::<JwtConfig>().await {
         Some(cfg) => cfg,
         None => {
-            eprintln!("Failed to load JWT config");
+            eprintln!("[soybean-admin-rust] >>>>>> [server-core] Failed to load JWT config");
             return;
         }
     };
 
     let keys = Keys::new(jwt_config.jwt_secret.as_bytes());
-    KEYS.set(Arc::new(Mutex::new(keys)))
-        .unwrap_or_else(|_| eprintln!("Failed to set KEYS"));
+    KEYS.set(Arc::new(Mutex::new(keys))).unwrap_or_else(|_| {
+        eprintln!("[soybean-admin-rust] >>>>>> [server-core] Failed to set KEYS")
+    });
 
     let mut validation = jsonwebtoken::Validation::default();
     validation.leeway = 60;
     validation.set_issuer(&[&jwt_config.issuer]);
-    VALIDATION
-        .set(Arc::new(Mutex::new(validation)))
-        .unwrap_or_else(|_| eprintln!("Failed to set VALIDATION"));
+    VALIDATION.set(Arc::new(Mutex::new(validation))).unwrap_or_else(|_| {
+        eprintln!("[soybean-admin-rust] >>>>>> [server-core] Failed to set VALIDATION")
+    });
 }
 
 // pub static KEYS: Lazy<Arc<Mutex<Keys>>> = Lazy::new(|| {
@@ -64,7 +65,11 @@ pub struct JwtUtils;
 
 impl JwtUtils {
     pub async fn generate_token(claims: &Claims) -> Result<String, jsonwebtoken::errors::Error> {
-        let keys = KEYS.get().expect("Keys not initialized").lock().await;
+        let keys = KEYS
+            .get()
+            .expect("[soybean-admin-rust] >>>>>> [server-core] Keys not initialized")
+            .lock()
+            .await;
         encode(&Header::default(), claims, &keys.encoding)
     }
 
@@ -72,8 +77,16 @@ impl JwtUtils {
         token: &str,
         audience: &str,
     ) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
-        let keys = KEYS.get().expect("Keys not initialized").lock().await;
-        let validation = VALIDATION.get().expect("Validation not initialized").lock().await;
+        let keys = KEYS
+            .get()
+            .expect("[soybean-admin-rust] >>>>>> [server-core] Keys not initialized")
+            .lock()
+            .await;
+        let validation = VALIDATION
+            .get()
+            .expect("[soybean-admin-rust] >>>>>> [server-core] Validation not initialized")
+            .lock()
+            .await;
 
         let mut validation_clone = validation.clone();
         validation_clone.set_audience(&[audience.to_string()]);

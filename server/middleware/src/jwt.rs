@@ -53,7 +53,7 @@ mod tests {
     use chrono::{Duration, Utc};
     use jsonwebtoken::{encode, EncodingKey, Header};
     use server_constant::definition::Audience;
-    use server_core::web::{auth::Claims, res::Res};
+    use server_core::web::{auth::Claims, jwt::initialize_keys_and_validation, res::Res};
     use server_initialize::initialize_config;
     use tower::{ServiceBuilder, ServiceExt};
 
@@ -73,6 +73,7 @@ mod tests {
         let casbin_middleware = CasbinAxumLayer::new(m, a).await.unwrap();
 
         initialize_config("../resources/application.yaml").await;
+        initialize_keys_and_validation().await;
 
         let app = Router::new()
             .route("/pen/1", get(user_info_handler))

@@ -8,7 +8,7 @@ use once_cell::sync::Lazy;
 use sea_orm::DatabaseConnection;
 use tokio::sync::RwLock;
 
-static GLOBAL_CONFIG: Lazy<RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>> =
+pub static GLOBAL_CONFIG: Lazy<RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
 
 pub async fn init_config<T: 'static + Any + Send + Sync>(config: T) {
@@ -23,9 +23,10 @@ pub async fn get_config<T: 'static + Any + Send + Sync>() -> Option<Arc<T>> {
         .and_then(|config| config.clone().downcast::<T>().ok())
 }
 
-#[allow(dead_code)]
-static GLOBAL_DB_POOL: Lazy<Arc<RwLock<HashMap<String, DatabaseConnection>>>> =
-    Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
+pub static GLOBAL_PRIMARY_DB: Lazy<RwLock<Option<Arc<DatabaseConnection>>>> =
+    Lazy::new(|| RwLock::new(None));
+pub static GLOBAL_DB_POOL: Lazy<RwLock<HashMap<String, Arc<DatabaseConnection>>>> =
+    Lazy::new(|| RwLock::new(HashMap::new()));
 
 // static GLOBAL_REDIS_POOL: Lazy<Arc<RwLock<HashMap<String, RedisClient>>>> =
 // Lazy::new(|| {     Arc::new(RwLock::new(HashMap::new()))

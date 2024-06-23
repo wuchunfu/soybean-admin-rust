@@ -7,6 +7,7 @@ edition.workspace = true
 
 [dependencies]
 server-config = { path = "../config" }
+server-global = { path = "../global" }
 server-router = { path = "../router" }
 server-service = { path = "../service" }
 axum-casbin = { path = "../../axum-casbin" }
@@ -18,7 +19,6 @@ sea-orm = { workspace = true }
 axum = { workspace = true }
 
 [dev-dependencies]
-server-global = { path = "../global" }
 
 axum-test-helpers = { workspace = true }
 tower = { workspace = true, features = ["full"] }
@@ -29,3 +29,4 @@ http-body = { workspace = true }
 http-body-util = { workspace = true }
 bytes = { workspace = true }
 simplelog = { workspace = true }
+simple_logger = "5.0.0"
