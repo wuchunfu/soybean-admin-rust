@@ -1,5 +1,5 @@
 use server_core::web::{res::Res, validator::ValidatedForm};
-use server_model::admin::input::LoginInput;
+use server_service::admin::LoginInput;
 
 pub struct SysAuthenticationApi;
 

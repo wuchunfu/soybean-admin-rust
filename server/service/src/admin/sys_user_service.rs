@@ -1,9 +1,11 @@
 use async_trait::async_trait;
-use server_model::admin::entities::User;
+use sea_orm::{DbErr, EntityTrait};
+use server_global::global::GLOBAL_PRIMARY_DB;
+use server_model::admin::entities::{prelude::SysUser, sys_user};
 
 #[async_trait]
 pub trait TUserService {
-    async fn get_all_users(&self) -> Vec<User>;
+    async fn find_all(&self) -> Result<Vec<sys_user::Model>, DbErr>;
 }
 
 #[derive(Clone)]
@@ -11,10 +13,8 @@ pub struct SysUserService;
 
 #[async_trait]
 impl TUserService for SysUserService {
-    async fn get_all_users(&self) -> Vec<User> {
-        vec![
-            User::new(1, "Alice".to_string()),
-            User::new(2, "Bob".to_string()),
-        ]
+    async fn find_all(&self) -> Result<Vec<sys_user::Model>, DbErr> {
+        let db = GLOBAL_PRIMARY_DB.read().await.clone().unwrap();
+        SysUser::find().all(db.as_ref()).await
     }
 }

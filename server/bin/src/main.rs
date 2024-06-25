@@ -2,13 +2,9 @@ use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() {
-    // tracing_subscriber::registry()
-    //     .with(
-    //         tracing_subscriber::EnvFilter::try_from_default_env()
-    //             .unwrap_or_else(|_| "example_validator=debug".into()),
-    //     )
-    //     .with(tracing_subscriber::fmt::layer())
-    //     .init();
+    server_initialize::initialize_config("server/resources/application.yaml").await;
+    server_initialize::initialize_log_tracing().await;
+    let _ = server_initialize::init_primary_connection().await;
 
     // build our application with a route
     let app = server_initialize::initialize_admin_router().await;

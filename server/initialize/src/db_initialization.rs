@@ -1,12 +1,14 @@
+#![allow(dead_code)]
 use std::{sync::Arc, time::Duration};
 
 use log::info;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use server_config::{DatabaseConfig, DatabasesConfig};
-use server_global::global::{GLOBAL_DB_POOL, GLOBAL_PRIMARY_DB};
+use server_global::global::{get_config, GLOBAL_DB_POOL, GLOBAL_PRIMARY_DB};
 
-pub async fn init_primary_connection(db_config: &DatabaseConfig) -> Result<(), String> {
-    let opt = build_connect_options(db_config);
+pub async fn init_primary_connection() -> Result<(), String> {
+    let db_config = get_config::<DatabaseConfig>().await.unwrap();
+    let opt = build_connect_options(&db_config);
     let db = Database::connect(opt)
         .await
         .map_err(|e| format!("Failed to connect to primary database: {}", e))?;
@@ -47,7 +49,7 @@ fn build_connect_options(db_config: &DatabaseConfig) -> ConnectOptions {
 }
 
 pub async fn get_primary_db_connection() -> Option<Arc<DatabaseConnection>> {
-    GLOBAL_PRIMARY_DB.read().await.as_ref().cloned()
+    GLOBAL_PRIMARY_DB.read().await.clone()
 }
 
 pub async fn get_db_pool_connection(name: &str) -> Option<Arc<DatabaseConnection>> {
@@ -98,8 +100,7 @@ mod tests {
         setup_logger();
         init().await;
 
-        let db_config = get_config::<DatabaseConfig>().await.unwrap();
-        let result = init_primary_connection(db_config.as_ref()).await;
+        let result = init_primary_connection().await;
         assert!(result.is_ok(), "Failed to initialize all connections: {:?}", result.err());
 
         let connection = get_primary_db_connection().await;

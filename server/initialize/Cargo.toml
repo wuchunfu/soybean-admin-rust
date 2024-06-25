@@ -17,6 +17,10 @@ log = { workspace = true }
 casbin = { workspace = true }
 sea-orm = { workspace = true }
 axum = { workspace = true }
+tracing = { workspace = true, features = ["log"] }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tracing-error = { workspace = true }
+tracing-log = { workspace = true }
 
 [dev-dependencies]
 
@@ -29,4 +33,4 @@ http-body = { workspace = true }
 http-body-util = { workspace = true }
 bytes = { workspace = true }
 simplelog = { workspace = true }
-simple_logger = "5.0.0"
+simple_logger = { workspace = true }

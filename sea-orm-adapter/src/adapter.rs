@@ -215,7 +215,7 @@ mod tests {
         let db_url = {
             #[cfg(feature = "postgres")]
             {
-                "postgresql://soybean:soybean@123.@localhost:35432/axum-admin"
+                "postgresql://soybean:soybean@123.@localhost:35432/soybean-admin-rust-backend"
             }
 
             #[cfg(feature = "mysql")]
