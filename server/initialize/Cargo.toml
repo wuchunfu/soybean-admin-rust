@@ -8,6 +8,7 @@ edition.workspace = true
 [dependencies]
 server-config = { path = "../config" }
 server-global = { path = "../global" }
+server-middleware = { path = "../middleware" }
 server-router = { path = "../router" }
 server-service = { path = "../service" }
 axum-casbin = { path = "../../axum-casbin" }
@@ -17,6 +18,7 @@ log = { workspace = true }
 casbin = { workspace = true }
 sea-orm = { workspace = true }
 axum = { workspace = true }
+tower-http = { workspace = true, features = ["trace", "tracing"] }
 tracing = { workspace = true, features = ["log"] }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 tracing-error = { workspace = true }
