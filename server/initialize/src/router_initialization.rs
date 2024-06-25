@@ -19,7 +19,7 @@ pub async fn initialize_admin_router() -> Router {
                 .map(ToString::to_string)
                 .unwrap_or_else(|| "unknown".into());
             info_span!(
-                "request",
+                "[soybean-admin-rust] >>>>>> request",
                 id = %request_id,
                 method = %request.method(),
                 uri = %request.uri(),

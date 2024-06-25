@@ -2,7 +2,8 @@ use tracing_log::LogTracer;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer};
 
 pub async fn initialize_log_tracing() {
-    LogTracer::init().expect("Failed to set logger");
+    LogTracer::init()
+        .expect("[soybean-admin-rust] >>>>>> [server-initialize] Failed to set logger");
 
     let fmt_layer = tracing_subscriber::fmt::layer()
         .with_target(false)
@@ -12,8 +13,9 @@ pub async fn initialize_log_tracing() {
         .with(fmt_layer)
         .with(tracing_error::ErrorLayer::default());
 
-    tracing::subscriber::set_global_default(subscriber)
-        .expect("Failed to set up global subscriber");
+    tracing::subscriber::set_global_default(subscriber).expect(
+        "[soybean-admin-rust] >>>>>> [server-initialize] Failed to set up global subscriber",
+    );
 
     tracing::info!(
         "[soybean-admin-rust] >>>>>> [server-initialize] Log Tracing initialized successfully"

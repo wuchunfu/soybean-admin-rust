@@ -11,9 +11,11 @@ pub async fn init_primary_connection() -> Result<(), String> {
     let opt = build_connect_options(&db_config);
     let db = Database::connect(opt)
         .await
-        .map_err(|e| format!("Failed to connect to primary database: {}", e))?;
+        .map_err(|e| format!("[soybean-admin-rust] >>>>>> [server-initialize] Failed to connect to primary database: {}", e))?;
     *GLOBAL_PRIMARY_DB.write().await = Some(Arc::new(db));
-    info!("Primary database connection initialized");
+    info!(
+        "[soybean-admin-rust] >>>>>> [server-initialize] Primary database connection initialized"
+    );
     Ok(())
 }
 
@@ -32,9 +34,9 @@ async fn init_db_connection(name: &str, db_config: &DatabaseConfig) -> Result<()
     let opt = build_connect_options(db_config);
     let db = Database::connect(opt)
         .await
-        .map_err(|e| format!("Failed to connect to database '{}': {}", name, e))?;
+        .map_err(|e| format!("[soybean-admin-rust] >>>>>> [server-initialize] Failed to connect to database '{}': {}", name, e))?;
     GLOBAL_DB_POOL.write().await.insert(name.to_string(), Arc::new(db));
-    info!("Database '{}' initialized", name);
+    info!("[soybean-admin-rust] >>>>>> [server-initialize] Database '{}' initialized", name);
     Ok(())
 }
 
@@ -66,7 +68,7 @@ pub async fn add_or_update_db_pool_connection(
 pub async fn remove_db_pool_connection(name: &str) -> Result<(), String> {
     let mut db_pool = GLOBAL_DB_POOL.write().await;
     db_pool.remove(name).ok_or_else(|| "Connection not found".to_string())?;
-    info!("Database connection '{}' removed", name);
+    info!("[soybean-admin-rust] >>>>>> [server-initialize] Database connection '{}' removed", name);
     Ok(())
 }
 
