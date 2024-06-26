@@ -1,22 +1,30 @@
 #![allow(dead_code)]
-use std::{sync::Arc, time::Duration};
+use std::{process, sync::Arc, time::Duration};
 
 use log::info;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use server_config::{DatabaseConfig, DatabasesConfig};
 use server_global::global::{get_config, GLOBAL_DB_POOL, GLOBAL_PRIMARY_DB};
 
-pub async fn init_primary_connection() -> Result<(), String> {
+pub async fn init_primary_connection() {
     let db_config = get_config::<DatabaseConfig>().await.unwrap();
     let opt = build_connect_options(&db_config);
-    let db = Database::connect(opt)
-        .await
-        .map_err(|e| format!("[soybean-admin-rust] >>>>>> [server-initialize] Failed to connect to primary database: {}", e))?;
-    *GLOBAL_PRIMARY_DB.write().await = Some(Arc::new(db));
-    info!(
-        "[soybean-admin-rust] >>>>>> [server-initialize] Primary database connection initialized"
-    );
-    Ok(())
+    let db = Database::connect(opt).await;
+    match db {
+        Ok(db) => {
+            *GLOBAL_PRIMARY_DB.write().await = Some(Arc::new(db));
+            tracing::info!(
+                "[soybean-admin-rust] >>>>>> [server-initialize] Primary database connection initialized"
+            );
+        }
+        Err(e) => {
+            tracing::error!(
+                "[soybean-admin-rust] >>>>>> [server-initialize] Failed to connect to primary database: {}",
+                e
+            );
+            process::exit(1);
+        }
+    }
 }
 
 pub async fn init_db_pool_connections(
@@ -102,8 +110,7 @@ mod tests {
         setup_logger();
         init().await;
 
-        let result = init_primary_connection().await;
-        assert!(result.is_ok(), "Failed to initialize all connections: {:?}", result.err());
+        init_primary_connection().await;
 
         let connection = get_primary_db_connection().await;
         assert!(connection.is_some(), "Master database connection does not exist");
