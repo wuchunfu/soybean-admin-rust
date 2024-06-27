@@ -2,4 +2,10 @@
 
 pub mod prelude;
 
+pub mod casbin_rule;
+pub mod sys_domain;
+pub mod sys_org_user;
+pub mod sys_organization;
+pub mod sys_role;
 pub mod sys_user;
+pub mod sys_user_role;

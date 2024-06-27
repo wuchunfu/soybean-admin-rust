@@ -12,7 +12,7 @@ impl SysUserApi {
     ) -> Res<Vec<sys_user::Model>> {
         match service.find_all().await {
             Ok(users) => Res::<Vec<sys_user::Model>>::new_data(users),
-            Err(_) => Res::new_error(1001, ""),
+            Err(err) => Res::new_error(err.code, err.message.as_str()),
         }
     }
 }
