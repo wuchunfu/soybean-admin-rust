@@ -64,33 +64,29 @@ pub async fn initialize_keys_and_validation() {
 pub struct JwtUtils;
 
 impl JwtUtils {
-    pub async fn generate_token(claims: &Claims) -> Result<String, jsonwebtoken::errors::Error> {
-        let keys = KEYS
+    pub async fn generate_token(claims: &Claims) -> Result<String, String> {
+        let keys_arc = KEYS
             .get()
-            .expect("[soybean-admin-rust] >>>>>> [server-core] Keys not initialized")
-            .lock()
-            .await;
-        encode(&Header::default(), claims, &keys.encoding)
+            .ok_or("[soybean-admin-rust] >>>>>> [server-core] Keys not initialized")?;
+
+        let keys = keys_arc.lock().await;
+        encode(&Header::default(), claims, &keys.encoding).map_err(|e| e.to_string())
     }
 
-    pub async fn validate_token(
-        token: &str,
-        audience: &str,
-    ) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
-        let keys = KEYS
+    pub async fn validate_token(token: &str, audience: &str) -> Result<TokenData<Claims>, String> {
+        let keys_arc = KEYS
             .get()
-            .expect("[soybean-admin-rust] >>>>>> [server-core] Keys not initialized")
-            .lock()
-            .await;
-        let validation = VALIDATION
+            .ok_or("[soybean-admin-rust] >>>>>> [server-core] Keys not initialized")?;
+
+        let keys = keys_arc.lock().await;
+        let validation_arc = VALIDATION
             .get()
-            .expect("[soybean-admin-rust] >>>>>> [server-core] Validation not initialized")
-            .lock()
-            .await;
+            .ok_or("[soybean-admin-rust] >>>>>> [server-core] Validation not initialized")?;
+        let validation = validation_arc.lock().await;
 
         let mut validation_clone = validation.clone();
         validation_clone.set_audience(&[audience.to_string()]);
-        decode::<Claims>(token, &keys.decoding, &validation_clone)
+        decode::<Claims>(token, &keys.decoding, &validation_clone).map_err(|e| e.to_string())
     }
 }
 
