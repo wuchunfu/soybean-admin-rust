@@ -8,6 +8,8 @@ edition.workspace = true
 [dependencies]
 server-global = { path = "../global" }
 server-model = { path = "../model" }
+server-shared = { path = "../shared" }
 
 async-trait = { workspace = true, default-features = false }
 sea-orm = { workspace = true, features = ["runtime-tokio-native-tls", "macros"] }
+thiserror = { workspace = true }

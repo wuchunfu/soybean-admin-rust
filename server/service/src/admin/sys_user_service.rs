@@ -1,9 +1,9 @@
 use async_trait::async_trait;
 use sea_orm::EntityTrait;
-use server_global::global::GLOBAL_PRIMARY_DB;
 use server_model::admin::entities::{prelude::SysUser, sys_user};
+use server_shared::error::AppError;
 
-use crate::admin::error::AppError;
+use crate::helper::db_helper;
 
 #[async_trait]
 pub trait TUserService {
@@ -16,10 +16,7 @@ pub struct SysUserService;
 #[async_trait]
 impl TUserService for SysUserService {
     async fn find_all(&self) -> Result<Vec<sys_user::Model>, AppError> {
-        let db = GLOBAL_PRIMARY_DB.read().await;
-        match *db {
-            Some(ref db_ref) => SysUser::find().all(db_ref.as_ref()).await.map_err(AppError::from),
-            None => Err(AppError::new(500, "Unable to acquire database connection".to_string())),
-        }
+        let db = db_helper::get_db_connection().await?;
+        SysUser::find().all(db.as_ref()).await.map_err(AppError::from)
     }
 }

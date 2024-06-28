@@ -2609,6 +2609,7 @@ dependencies = [
  "axum",
  "server-core",
  "server-service",
+ "server-shared",
 ]
 
 [[package]]
@@ -2747,6 +2748,17 @@ dependencies = [
  "sea-orm",
  "server-global",
  "server-model",
+ "server-shared",
+ "thiserror",
+]
+
+[[package]]
+name = "server-shared"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "sea-orm",
+ "server-core",
 ]
 
 [[package]]
