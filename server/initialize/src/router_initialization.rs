@@ -14,7 +14,7 @@ use crate::initialize_casbin;
 
 pub async fn initialize_admin_router() -> Router {
     let app_config = get_config::<Config>().await.unwrap();
-    let casbin_middleware =
+    let casbin_axum_layer =
         initialize_casbin("server/resources/rbac_model.conf", app_config.database.url.as_str())
             .await
             .unwrap();
@@ -33,7 +33,7 @@ pub async fn initialize_admin_router() -> Router {
         )
     });
 
-    // casbin_middleware
+    // casbin_axum_layer
     //     .write()
     //     .await
     //     .get_role_manager()
@@ -54,7 +54,7 @@ pub async fn initialize_admin_router() -> Router {
             .layer(Extension(Arc::new(SysUserService)))
             .layer(trace_layer.clone())
             .layer(RequestIdLayer)
-            .layer(casbin_middleware)
+            .layer(casbin_axum_layer)
             .layer(axum::middleware::from_fn(move |req, next| {
                 jwt_auth_middleware(req, next, Audience::ManagementPlatform.as_str())
             })),

@@ -13,6 +13,6 @@ pub async fn initialize_casbin(
     let db = Database::connect(db_url).await?;
     let adapter = SeaOrmAdapter::new(db).await?;
 
-    let casbin_middleware = CasbinAxumLayer::new(model, adapter).await?;
-    Ok(casbin_middleware)
+    let casbin_axum_layer = CasbinAxumLayer::new(model, adapter).await?;
+    Ok(casbin_axum_layer)
 }
