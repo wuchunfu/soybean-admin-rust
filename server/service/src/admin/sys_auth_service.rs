@@ -15,6 +15,7 @@ use server_model::admin::{
     input::LoginInput,
     output::{AuthOutput, UserWithDomainAndOrgOutput},
 };
+use tokio::{spawn, sync::mpsc};
 
 use crate::{admin::sys_user_error::UserError, helper::db_helper};
 
@@ -113,4 +114,13 @@ pub async fn generate_auth_output(
     Ok(AuthOutput {
         access_token: token,
     })
+}
+
+pub async fn start_event_listener(mut rx: mpsc::UnboundedReceiver<String>) {
+    spawn(async move {
+        while let Some(jwt) = rx.recv().await {
+            // TODO Consider storing the token into the database?
+            println!("JWT created: {}", jwt);
+        }
+    });
 }

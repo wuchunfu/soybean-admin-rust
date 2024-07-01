@@ -19,6 +19,7 @@ thiserror = { workspace = true }
 mime = { workspace = true }
 chrono = { workspace = true }
 sea-orm = { workspace = true }
+ulid = { workspace = true }
 
 [dev-dependencies]
 server-initialize = { path = "../initialize" }

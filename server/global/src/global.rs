@@ -5,9 +5,10 @@ use std::{
 };
 
 use jsonwebtoken::{DecodingKey, EncodingKey, Validation};
+use lazy_static::lazy_static;
 use once_cell::sync::Lazy;
 use sea_orm::DatabaseConnection;
-use tokio::sync::{Mutex, OnceCell, RwLock};
+use tokio::sync::{mpsc, Mutex, OnceCell, RwLock};
 
 pub static GLOBAL_CONFIG: Lazy<RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
@@ -53,3 +54,24 @@ impl Keys {
 
 pub static KEYS: OnceCell<Arc<Mutex<Keys>>> = OnceCell::const_new();
 pub static VALIDATION: OnceCell<Arc<Mutex<Validation>>> = OnceCell::const_new();
+
+lazy_static! {
+    pub static ref EVENT_SENDER: Mutex<Option<mpsc::UnboundedSender<String>>> = Mutex::new(None);
+    pub static ref EVENT_RECEIVER: Mutex<Option<mpsc::UnboundedReceiver<String>>> =
+        Mutex::new(None);
+}
+
+pub async fn initialize_global_event_channel() {
+    let (tx, rx) = mpsc::unbounded_channel::<String>();
+    *EVENT_SENDER.lock().await = Some(tx);
+    *EVENT_RECEIVER.lock().await = Some(rx);
+}
+
+pub async fn get_event_sender() -> Option<mpsc::UnboundedSender<String>> {
+    let lock = EVENT_SENDER.lock().await;
+    lock.clone()
+}
+
+pub async fn get_event_receiver() -> Option<mpsc::UnboundedReceiver<String>> {
+    EVENT_RECEIVER.lock().await.take()
+}

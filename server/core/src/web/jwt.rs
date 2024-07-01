@@ -4,6 +4,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, Header, TokenData};
 use server_config::JwtConfig;
 use server_global::global;
+use ulid::Ulid;
 
 use crate::web::auth::Claims;
 
@@ -60,10 +61,21 @@ impl JwtUtils {
         claims_clone.set_iss(jwt_config.issuer.to_string());
         claims_clone.set_iat(timestamp);
         claims_clone.set_nbf(timestamp);
-        claims_clone.set_jti("unique_token_id".to_string());
+        claims_clone.set_jti(Ulid::new().to_string());
 
-        encode(&Header::default(), &claims_clone, &keys.encoding)
-            .map_err(|e| JwtError::TokenCreationError(e.to_string()))
+        let token = encode(&Header::default(), &claims_clone, &keys.encoding)
+            .map_err(|e| JwtError::TokenCreationError(e.to_string()));
+
+        if let Ok(ref tok) = token {
+            if let Some(sender) = global::get_event_sender().await {
+                let tok_to_send = tok.clone();
+                tokio::spawn(async move {
+                    let _ = sender.send(tok_to_send);
+                });
+            }
+        }
+
+        token
     }
 
     pub async fn validate_token(
