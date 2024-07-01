@@ -8,5 +8,6 @@ edition.workspace = true
 [dependencies]
 server-core = { path = "../core" }
 server-service = { path = "../service" }
+axum-casbin = { path = "../../axum-casbin" }
 
 axum = { workspace = true }

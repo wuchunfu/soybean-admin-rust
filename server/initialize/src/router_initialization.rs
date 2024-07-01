@@ -52,6 +52,7 @@ pub async fn initialize_admin_router() -> Router {
         SysUserRouter::init_user_router()
             .await
             .layer(Extension(Arc::new(SysUserService)))
+            .layer(Extension(casbin_axum_layer.clone()))
             .layer(trace_layer.clone())
             .layer(RequestIdLayer)
             .layer(casbin_axum_layer)
