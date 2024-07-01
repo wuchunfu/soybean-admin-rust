@@ -126,7 +126,7 @@ mod tests {
         assert!(result.is_ok(), "Failed to initialize db_pool connections: {:?}", result.err());
 
         let db_config = DatabaseConfig {
-            url: "postgresql://soybean:soybean@123.@localhost:35432/postgres".to_string(),
+            url: "postgres://postgres:123456@localhost:5432/soybean-admin-rust-backend".to_string(),
             max_connections: 50,
             min_connections: 5,
             connect_timeout: 15,

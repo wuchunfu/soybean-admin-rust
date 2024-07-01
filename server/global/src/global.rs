@@ -4,9 +4,10 @@ use std::{
     sync::Arc,
 };
 
+use jsonwebtoken::{DecodingKey, EncodingKey, Validation};
 use once_cell::sync::Lazy;
 use sea_orm::DatabaseConnection;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, OnceCell, RwLock};
 
 pub static GLOBAL_CONFIG: Lazy<RwLock<HashMap<TypeId, Arc<dyn Any + Send + Sync>>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
@@ -35,3 +36,20 @@ pub static GLOBAL_DB_POOL: Lazy<RwLock<HashMap<String, Arc<DatabaseConnection>>>
 // static GLOBAL_MONGO_POOL: Lazy<Arc<RwLock<HashMap<String, MongoClient>>>> =
 // Lazy::new(|| {     Arc::new(RwLock::new(HashMap::new()))
 // });
+
+pub struct Keys {
+    pub encoding: EncodingKey,
+    pub decoding: DecodingKey,
+}
+
+impl Keys {
+    pub fn new(secret: &[u8]) -> Self {
+        Self {
+            encoding: EncodingKey::from_secret(secret),
+            decoding: DecodingKey::from_secret(secret),
+        }
+    }
+}
+
+pub static KEYS: OnceCell<Arc<Mutex<Keys>>> = OnceCell::const_new();
+pub static VALIDATION: OnceCell<Arc<Mutex<Validation>>> = OnceCell::const_new();

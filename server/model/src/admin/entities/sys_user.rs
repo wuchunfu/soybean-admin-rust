@@ -12,7 +12,7 @@ pub struct Model {
     pub org_id: Option<i64>,
     pub username: String,
     pub password: String,
-    pub nike_name: String,
+    pub nick_name: String,
     pub avatar: Option<String>,
     pub email: Option<String>,
     pub phone: Option<String>,
@@ -22,6 +22,39 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::sys_domain::Entity",
+        from = "Column::DomainId",
+        to = "super::sys_domain::Column::Id"
+    )]
+    SysDomain,
+    #[sea_orm(
+        belongs_to = "super::sys_organization::Entity",
+        from = "Column::OrgId",
+        to = "super::sys_organization::Column::Id"
+    )]
+    SysOrganization,
+    #[sea_orm(has_many = "super::sys_user_role::Entity")]
+    SysUserRole,
+}
+
+impl Related<super::sys_domain::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SysDomain.def()
+    }
+}
+
+impl Related<super::sys_organization::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SysOrganization.def()
+    }
+}
+
+impl Related<super::sys_user_role::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::SysUserRole.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

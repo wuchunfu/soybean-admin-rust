@@ -17,8 +17,8 @@ once_cell = { workspace = true }
 tokio = { workspace = true, default-features = false, features = ["full"] }
 thiserror = { workspace = true }
 mime = { workspace = true }
+chrono = { workspace = true }
+sea-orm = { workspace = true }
 
 [dev-dependencies]
 server-initialize = { path = "../initialize" }
-
-chrono = { workspace = true }

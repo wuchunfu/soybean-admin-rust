@@ -6,7 +6,3 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-server-core = { path = "../core" }
-
-axum = { workspace = true }
-sea-orm = { workspace = true }

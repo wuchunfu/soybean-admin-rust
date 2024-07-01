@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
 use axum::Extension;
-use server_core::web::res::Res;
+use server_core::web::{error::AppError, res::Res};
 use server_service::admin::{sys_user, SysUserService, TUserService};
-use server_shared::error::AppError;
 
 pub struct SysUserApi;
 

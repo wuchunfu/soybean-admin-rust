@@ -9,3 +9,4 @@ edition.workspace = true
 once_cell = { workspace = true }
 sea-orm = { workspace = true }
 tokio = { workspace = true, default-features = false, features = ["full"] }
+jsonwebtoken = { workspace = true }

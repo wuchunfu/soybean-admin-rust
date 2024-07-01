@@ -1,5 +1,5 @@
 database:
-    url: "postgres://soybean:soybean@123.@localhost:35432/soybean-admin-rust-backend"
+    url: "postgres://postgres:123456@localhost:5432/soybean-admin-rust-backend"
     max_connections: 10
     min_connections: 1
     connect_timeout: 30
@@ -10,3 +10,4 @@ server:
 jwt:
     jwt_secret: "soybean-admin-rust"
     issuer: "https://github.com/ByteByteBrew/soybean-admin-rust"
+    expire: 7200

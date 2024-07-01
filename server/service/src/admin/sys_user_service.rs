@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use sea_orm::EntityTrait;
+use server_core::web::error::AppError;
 use server_model::admin::entities::{prelude::SysUser, sys_user};
-use server_shared::error::AppError;
 
 use crate::helper::db_helper;
 

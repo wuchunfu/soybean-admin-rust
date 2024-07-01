@@ -26,15 +26,17 @@ pub async fn jwt_auth_middleware(
             let claims = data.claims;
             let user = User::from(claims);
             let vals = CasbinVals {
-                subject: user.account().to_string(),
-                domain: Option::from(user.organization().to_string()),
+                subject: user.subject(),
+                domain: Option::from(user.domain()),
             };
             req.extensions_mut().insert(user);
             req.extensions_mut().insert(vals);
             next.run(req).await.into_response()
         }
-        Err(_) => Res::<String>::new_error(StatusCode::UNAUTHORIZED.as_u16(), "Invalid token")
-            .into_response(),
+        Err(err) => {
+            Res::<String>::new_error(StatusCode::UNAUTHORIZED.as_u16(), err.to_string().as_str())
+                .into_response()
+        }
     }
 }
 
@@ -50,11 +52,10 @@ mod tests {
         casbin::{DefaultModel, FileAdapter},
         CasbinAxumLayer,
     };
-    use chrono::{Duration, Utc};
     use jsonwebtoken::{encode, EncodingKey, Header};
     use server_constant::definition::Audience;
-    use server_core::web::{auth::Claims, jwt::initialize_keys_and_validation, res::Res};
-    use server_initialize::initialize_config;
+    use server_core::web::{auth::Claims, res::Res};
+    use server_initialize::{initialize_config, initialize_keys_and_validation};
     use tower::{ServiceBuilder, ServiceExt};
 
     use crate::jwt::{jwt_auth_middleware, User};
@@ -102,18 +103,13 @@ mod tests {
     }
 
     fn generate_jwt() -> String {
-        let now = Utc::now();
         let claims = Claims::new(
             "user123".to_string(),
-            (now + Duration::seconds(3600)).timestamp() as usize,
-            "https://github.com/ByteByteBrew/soybean-admin-rust".to_string(),
             Audience::ManagementPlatform.as_str().to_string(),
-            now.timestamp() as usize,
-            now.timestamp() as usize,
-            "unique_token_id".to_string(),
             "alice".to_string(),
-            "example_role".to_string(),
+            vec!["example_role".to_string()],
             "domain1".to_string(),
+            Option::from("example_org".to_string()),
         );
 
         let encoding_key = EncodingKey::from_secret("soybean-admin-rust".as_ref());

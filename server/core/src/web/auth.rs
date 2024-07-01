@@ -10,60 +10,81 @@ use crate::web::res::Res;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     sub: String,
-    exp: usize,
-    iss: String,
+
+    exp: Option<usize>,
+    iss: Option<String>,
     aud: String,
-    iat: usize,
-    nbf: usize,
-    jti: String,
-    account: String,
-    role: String,
+    iat: Option<usize>,
+    nbf: Option<usize>,
+    jti: Option<String>,
+
+    username: String,
+    role: Vec<String>,
     domain: String,
+    org: Option<String>,
 }
 
 impl Claims {
     pub fn new(
         sub: String,
-        exp: usize,
-        iss: String,
         aud: String,
-        iat: usize,
-        nbf: usize,
-        jti: String,
-        account: String,
-        role: String,
+        username: String,
+        role: Vec<String>,
         domain: String,
+        org: Option<String>,
     ) -> Self {
         Self {
             sub,
-            exp,
-            iss,
+            exp: None,
+            iss: None,
             aud,
-            iat,
-            nbf,
-            jti,
-            account,
+            iat: None,
+            nbf: None,
+            jti: None,
+            username,
             role,
             domain,
+            org,
         }
+    }
+
+    pub fn set_exp(&mut self, exp: usize) {
+        self.exp = Some(exp);
+    }
+
+    pub fn set_iss(&mut self, iss: String) {
+        self.iss = Some(iss);
+    }
+
+    pub fn set_iat(&mut self, iat: usize) {
+        self.iat = Some(iat);
+    }
+
+    pub fn set_nbf(&mut self, nbf: usize) {
+        self.nbf = Some(nbf);
+    }
+
+    pub fn set_jti(&mut self, jti: String) {
+        self.jti = Some(jti);
     }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
     user_id: String,
-    account: String,
-    role: String,
-    organization: String,
+    username: String,
+    role: Vec<String>,
+    domain: String,
+    org: Option<String>,
 }
 
 impl User {
-    pub fn account(&self) -> &str {
-        &self.account
+    pub fn subject(&self) -> String {
+        self.user_id.to_string()
     }
 
-    pub fn organization(&self) -> &str {
-        &self.organization
+    pub fn domain(&self) -> String {
+        self.domain.to_string()
     }
 }
 
@@ -71,9 +92,10 @@ impl From<Claims> for User {
     fn from(claims: Claims) -> Self {
         User {
             user_id: claims.sub,
-            account: claims.account,
+            username: claims.username,
             role: claims.role,
-            organization: claims.domain,
+            domain: claims.domain,
+            org: claims.org,
         }
     }
 }

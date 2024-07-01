@@ -1,19 +1,22 @@
-use server_shared::error::{ApiError, AppError};
+use server_core::web::error::{ApiError, AppError};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum UserError {
     #[error("User not found")]
     UserNotFound,
-    #[error("Username cannot be empty")]
-    UsernameEmpty,
+    #[error("Authentication failed: Wrong password")]
+    WrongPassword,
+    #[error("Authentication failed")]
+    AuthenticationFailed,
 }
 
 impl ApiError for UserError {
     fn code(&self) -> u16 {
         match self {
             UserError::UserNotFound => 1001,
-            UserError::UsernameEmpty => 1002,
+            UserError::WrongPassword => 1002,
+            UserError::AuthenticationFailed => 1003,
         }
     }
 

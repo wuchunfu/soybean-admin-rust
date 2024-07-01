@@ -7,6 +7,7 @@ edition.workspace = true
 
 [dependencies]
 server-config = { path = "../config" }
+server-constant = { path = "../constant" }
 server-global = { path = "../global" }
 server-middleware = { path = "../middleware" }
 server-router = { path = "../router" }
@@ -18,6 +19,7 @@ log = { workspace = true }
 casbin = { workspace = true }
 sea-orm = { workspace = true }
 axum = { workspace = true }
+tokio = { workspace = true, default-features = false, features = ["full"] }
 tower-http = { workspace = true, features = ["trace", "tracing"] }
 tracing = { workspace = true, features = ["log"] }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
@@ -28,7 +30,6 @@ tracing-log = { workspace = true }
 
 axum-test-helpers = { workspace = true }
 tower = { workspace = true, features = ["full"] }
-tokio = { workspace = true, default-features = false, features = ["full"] }
 futures = { workspace = true }
 http = { workspace = true }
 http-body = { workspace = true }

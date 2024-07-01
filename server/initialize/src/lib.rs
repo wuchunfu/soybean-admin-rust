@@ -1,12 +1,14 @@
 pub use casbin_initialization::initialize_casbin;
 pub use config_initialization::initialize_config;
 pub use db_initialization::{get_primary_db_connection, init_primary_connection};
+pub use jwt_initialization::initialize_keys_and_validation;
 pub use log_tracing_init::initialize_log_tracing;
 pub use router_initialization::initialize_admin_router;
 
 mod casbin_initialization;
 mod config_initialization;
 mod db_initialization;
+mod jwt_initialization;
 mod log_tracing_init;
 mod router_initialization;
 
@@ -56,7 +58,7 @@ mod tests {
 
         let result = initialize_casbin(
             "../resources/rbac_model.conf",
-            "postgresql://soybean:soybean@123.@localhost:35432/soybean-admin-rust-backend",
+            "postgres://postgres:123456@localhost:5432/soybean-admin-rust-backend",
         )
         .await;
         assert!(result.is_ok());
@@ -68,7 +70,7 @@ mod tests {
 
         let casbin_middleware = initialize_casbin(
             "../resources/rbac_model.conf",
-            "postgresql://soybean:soybean@123.@localhost:35432/soybean-admin-rust-backend",
+            "postgres://postgres:123456@localhost:5432/soybean-admin-rust-backend",
         )
         .await
         .unwrap();

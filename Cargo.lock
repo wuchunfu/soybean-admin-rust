@@ -412,6 +412,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 
 [[package]]
+name = "bcrypt"
+version = "0.15.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e65938ed058ef47d92cf8b346cc76ef48984572ade631927e9937b5ffc7662c7"
+dependencies = [
+ "base64 0.22.1",
+ "blowfish",
+ "getrandom",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -446,6 +459,16 @@ dependencies = [
  "futures-io",
  "futures-lite 2.3.0",
  "piper",
+]
+
+[[package]]
+name = "blowfish"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e412e2cd0f2b2d93e02543ceae7917b3c70331573df19ee046bcbc35e45e87d7"
+dependencies = [
+ "byteorder",
+ "cipher",
 ]
 
 [[package]]
@@ -550,6 +573,16 @@ dependencies = [
  "serde",
  "wasm-bindgen",
  "windows-targets 0.52.5",
+]
+
+[[package]]
+name = "cipher"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
+dependencies = [
+ "crypto-common",
+ "inout",
 ]
 
 [[package]]
@@ -1438,6 +1471,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.66",
+]
+
+[[package]]
+name = "inout"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5"
+dependencies = [
+ "generic-array",
 ]
 
 [[package]]
@@ -2609,7 +2651,6 @@ dependencies = [
  "axum",
  "server-core",
  "server-service",
- "server-shared",
 ]
 
 [[package]]
@@ -2647,6 +2688,7 @@ dependencies = [
  "jsonwebtoken",
  "mime",
  "once_cell",
+ "sea-orm",
  "serde",
  "server-config",
  "server-global",
@@ -2660,6 +2702,7 @@ dependencies = [
 name = "server-global"
 version = "0.1.0"
 dependencies = [
+ "jsonwebtoken",
  "once_cell",
  "sea-orm",
  "tokio",
@@ -2682,6 +2725,7 @@ dependencies = [
  "sea-orm",
  "sea-orm-adapter",
  "server-config",
+ "server-constant",
  "server-global",
  "server-middleware",
  "server-router",
@@ -2745,21 +2789,20 @@ name = "server-service"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bcrypt",
+ "chrono",
  "sea-orm",
+ "server-constant",
+ "server-core",
  "server-global",
  "server-model",
- "server-shared",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
 name = "server-shared"
 version = "0.1.0"
-dependencies = [
- "axum",
- "sea-orm",
- "server-core",
-]
 
 [[package]]
 name = "server-utils"

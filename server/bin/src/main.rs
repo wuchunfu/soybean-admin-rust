@@ -5,6 +5,7 @@ async fn main() {
     server_initialize::initialize_config("server/resources/application.yaml").await;
     server_initialize::initialize_log_tracing().await;
     server_initialize::init_primary_connection().await;
+    server_initialize::initialize_keys_and_validation().await;
 
     // build our application with a route
     let app = server_initialize::initialize_admin_router().await;

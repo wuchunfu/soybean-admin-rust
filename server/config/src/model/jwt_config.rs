@@ -4,4 +4,5 @@ use serde::Deserialize;
 pub struct JwtConfig {
     pub jwt_secret: String,
     pub issuer: String,
+    pub expire: i64,
 }

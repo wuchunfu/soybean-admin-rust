@@ -8,6 +8,5 @@ edition.workspace = true
 [dependencies]
 server-core = { path = "../core" }
 server-service = { path = "../service" }
-server-shared = { path = "../shared" }
 
 axum = { workspace = true }

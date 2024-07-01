@@ -2,6 +2,6 @@
 
 pub use super::{
     casbin_rule::Entity as CasbinRule, sys_domain::Entity as SysDomain,
-    sys_org_user::Entity as SysOrgUser, sys_organization::Entity as SysOrganization,
-    sys_role::Entity as SysRole, sys_user::Entity as SysUser, sys_user_role::Entity as SysUserRole,
+    sys_organization::Entity as SysOrganization, sys_role::Entity as SysRole,
+    sys_user::Entity as SysUser, sys_user_role::Entity as SysUserRole,
 };

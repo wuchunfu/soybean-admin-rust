@@ -1,50 +1,11 @@
-use std::sync::Arc;
+use std::{error::Error, fmt};
 
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, TokenData, Validation};
+use chrono::{Duration, Utc};
+use jsonwebtoken::{decode, encode, Header, TokenData};
 use server_config::JwtConfig;
 use server_global::global;
-use tokio::sync::{Mutex, OnceCell};
 
 use crate::web::auth::Claims;
-
-pub struct Keys {
-    pub encoding: EncodingKey,
-    pub decoding: DecodingKey,
-}
-
-impl Keys {
-    fn new(secret: &[u8]) -> Self {
-        Self {
-            encoding: EncodingKey::from_secret(secret),
-            decoding: DecodingKey::from_secret(secret),
-        }
-    }
-}
-
-pub static KEYS: OnceCell<Arc<Mutex<Keys>>> = OnceCell::const_new();
-pub static VALIDATION: OnceCell<Arc<Mutex<Validation>>> = OnceCell::const_new();
-
-pub async fn initialize_keys_and_validation() {
-    let jwt_config = match global::get_config::<JwtConfig>().await {
-        Some(cfg) => cfg,
-        None => {
-            eprintln!("[soybean-admin-rust] >>>>>> [server-core] Failed to load JWT config");
-            return;
-        }
-    };
-
-    let keys = Keys::new(jwt_config.jwt_secret.as_bytes());
-    KEYS.set(Arc::new(Mutex::new(keys))).unwrap_or_else(|_| {
-        eprintln!("[soybean-admin-rust] >>>>>> [server-core] Failed to set KEYS")
-    });
-
-    let mut validation = jsonwebtoken::Validation::default();
-    validation.leeway = 60;
-    validation.set_issuer(&[&jwt_config.issuer]);
-    VALIDATION.set(Arc::new(Mutex::new(validation))).unwrap_or_else(|_| {
-        eprintln!("[soybean-admin-rust] >>>>>> [server-core] Failed to set VALIDATION")
-    });
-}
 
 // pub static KEYS: Lazy<Arc<Mutex<Keys>>> = Lazy::new(|| {
 //     let config = global::get_config::<JwtConfig>()
@@ -61,55 +22,86 @@ pub async fn initialize_keys_and_validation() {
 //     Arc::new(Mutex::new(validation))
 // });
 
+#[derive(Debug)]
+pub enum JwtError {
+    KeysNotInitialized,
+    ValidationNotInitialized,
+    TokenCreationError(String),
+    TokenValidationError(String),
+}
+
+impl fmt::Display for JwtError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            JwtError::KeysNotInitialized => write!(f, "Keys not initialized"),
+            JwtError::ValidationNotInitialized => write!(f, "Validation not initialized"),
+            JwtError::TokenCreationError(err) => write!(f, "Token creation error: {}", err),
+            JwtError::TokenValidationError(err) => write!(f, "Token validation error: {}", err),
+        }
+    }
+}
+
+impl Error for JwtError {}
+
 pub struct JwtUtils;
 
 impl JwtUtils {
-    pub async fn generate_token(claims: &Claims) -> Result<String, String> {
-        let keys_arc = KEYS
-            .get()
-            .ok_or("[soybean-admin-rust] >>>>>> [server-core] Keys not initialized")?;
+    pub async fn generate_token(claims: &Claims) -> Result<String, JwtError> {
+        let keys_arc = global::KEYS.get().ok_or(JwtError::KeysNotInitialized)?;
 
         let keys = keys_arc.lock().await;
-        encode(&Header::default(), claims, &keys.encoding).map_err(|e| e.to_string())
+
+        let mut claims_clone = claims.clone();
+
+        let now = Utc::now();
+        let timestamp = now.timestamp() as usize;
+        let jwt_config = global::get_config::<JwtConfig>().await.unwrap();
+        claims_clone.set_exp((now + Duration::seconds(jwt_config.expire)).timestamp() as usize);
+        claims_clone.set_iss(jwt_config.issuer.to_string());
+        claims_clone.set_iat(timestamp);
+        claims_clone.set_nbf(timestamp);
+        claims_clone.set_jti("unique_token_id".to_string());
+
+        encode(&Header::default(), &claims_clone, &keys.encoding)
+            .map_err(|e| JwtError::TokenCreationError(e.to_string()))
     }
 
-    pub async fn validate_token(token: &str, audience: &str) -> Result<TokenData<Claims>, String> {
-        let keys_arc = KEYS
-            .get()
-            .ok_or("[soybean-admin-rust] >>>>>> [server-core] Keys not initialized")?;
+    pub async fn validate_token(
+        token: &str,
+        audience: &str,
+    ) -> Result<TokenData<Claims>, JwtError> {
+        let keys_arc = global::KEYS.get().ok_or(JwtError::KeysNotInitialized)?;
 
         let keys = keys_arc.lock().await;
-        let validation_arc = VALIDATION
-            .get()
-            .ok_or("[soybean-admin-rust] >>>>>> [server-core] Validation not initialized")?;
+        let validation_arc = global::VALIDATION.get().ok_or(JwtError::ValidationNotInitialized)?;
         let validation = validation_arc.lock().await;
 
         let mut validation_clone = validation.clone();
         validation_clone.set_audience(&[audience.to_string()]);
-        decode::<Claims>(token, &keys.decoding, &validation_clone).map_err(|e| e.to_string())
+        decode::<Claims>(token, &keys.decoding, &validation_clone)
+            .map_err(|e| JwtError::TokenValidationError(e.to_string()))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use chrono::{Duration, Utc};
-    use server_initialize::initialize_config;
+    use std::sync::Arc;
+
+    use chrono::Utc;
+    use server_initialize::{initialize_config, initialize_keys_and_validation};
+    use tokio::sync::Mutex;
 
     use super::*;
 
-    fn create_claims(issuer: &str, audience: &str, exp_offset: i64) -> Claims {
+    fn create_claims(issuer: &str, audience: &str) -> Claims {
         let now = Utc::now();
         Claims::new(
             "user123".to_string(),
-            (now + Duration::seconds(exp_offset)).timestamp() as usize,
-            issuer.to_string(),
             audience.to_string(),
-            now.timestamp() as usize,
-            now.timestamp() as usize,
-            "unique_token_id".to_string(),
             "account".to_string(),
-            "admin".to_string(),
+            vec!["admin".to_string()],
             "example_domain".to_string(),
+            Option::from("example_org".to_string()),
         )
     }
 
@@ -129,7 +121,7 @@ mod tests {
         init().await;
 
         let claims =
-            create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience", 3600);
+            create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience");
         let token = JwtUtils::generate_token(&claims).await.unwrap();
 
         let result = JwtUtils::validate_token(&token, "audience").await;
@@ -140,11 +132,8 @@ mod tests {
     async fn test_validate_token_invalid_audience() {
         init().await;
 
-        let claims = create_claims(
-            "https://github.com/ByteByteBrew/soybean-admin-rust",
-            "invalid_audience",
-            3600,
-        );
+        let claims =
+            create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "invalid_audience");
         let token = JwtUtils::generate_token(&claims).await.unwrap();
 
         let result = JwtUtils::validate_token(&token, "audience").await;
@@ -155,7 +144,7 @@ mod tests {
     async fn test_validate_token_invalid_issuer() {
         init().await;
 
-        let claims = create_claims("invalid_issuer", "audience", 3600);
+        let claims = create_claims("invalid_issuer", "audience");
         let token = JwtUtils::generate_token(&claims).await.unwrap();
 
         let result = JwtUtils::validate_token(&token, "audience").await;
@@ -167,7 +156,7 @@ mod tests {
         init().await;
 
         let claims =
-            create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience", -3600);
+            create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience");
         let token = JwtUtils::generate_token(&claims).await.unwrap();
 
         let result = JwtUtils::validate_token(&token, "audience").await;
@@ -179,7 +168,7 @@ mod tests {
         init().await;
 
         let claims =
-            create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience", 3600);
+            create_claims("https://github.com/ByteByteBrew/soybean-admin-rust", "audience");
         let token = JwtUtils::generate_token(&claims).await.unwrap();
 
         let mut invalid_token = token.clone();
