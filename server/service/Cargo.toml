@@ -10,6 +10,7 @@ server-constant = { path = "../constant" }
 server-core = { path = "../core" }
 server-global = { path = "../global" }
 server-model = { path = "../model" }
+server-utils = { path = "../utils" }
 
 async-trait = { workspace = true, default-features = false }
 tokio = { workspace = true, features = ["full"] }

@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use bcrypt::verify;
 use sea_orm::{ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect, RelationTrait};
 use server_constant::definition::Audience;
 use server_core::web::{
@@ -15,6 +14,7 @@ use server_model::admin::{
     input::LoginInput,
     output::{AuthOutput, UserWithDomainAndOrgOutput},
 };
+use server_utils::SecureUtil;
 use tokio::{spawn, sync::mpsc};
 
 use crate::{admin::sys_user_error::UserError, helper::db_helper};
@@ -60,7 +60,7 @@ impl TAuthService for SysAuthService {
             .map_err(AppError::from)?
             .ok_or_else(|| AppError::from(UserError::UserNotFound))?;
 
-        if !verify(&input.password, &user.password)
+        if !SecureUtil::verify_password(input.password.as_bytes(), &user.password)
             .map_err(|_| AppError::from(UserError::AuthenticationFailed))?
         {
             return Err(AppError::from(UserError::WrongPassword));
