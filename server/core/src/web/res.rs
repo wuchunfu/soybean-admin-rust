@@ -7,6 +7,8 @@ use axum::{
 };
 use serde::Serialize;
 
+use crate::web::page::PaginatedData;
+
 #[derive(Debug, Serialize, Default)]
 pub struct Res<T> {
     pub code: u16,
@@ -17,6 +19,15 @@ pub struct Res<T> {
 
 #[allow(dead_code)]
 impl<T: Serialize> Res<T> {
+    pub fn new_paginated(data: PaginatedData<T>) -> Self<PaginatedData<T>> {
+        Self {
+            code: StatusCode::OK.as_u16(),
+            data: Some(data),
+            msg: "success".to_string(),
+            success: true,
+        }
+    }
+
     pub fn new_success(data: T, msg: &str) -> Self {
         Self {
             code: StatusCode::OK.as_u16(),
